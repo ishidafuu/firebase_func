@@ -1,0 +1,112 @@
+name: build_and_deploy_to_firebase
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: slack notification
+        uses: 8398a7/action-slack@v2
+        if: always()
+        with:
+          status: ${{ job.status }}
+          username: github-functions
+          icon_emoji: ':octocat:'
+          text: "ビルドはじまるよ :parrot:"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout the repository
+        uses: actions/checkout@master
+
+      - run: cd functions
+      - run: pub get
+      - run: pub run build_runner build --output=build
+      - run: rm build/node/packages
+
+      - name: Archive Production Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: functions
+          path: functions
+
+      - name: slack notification
+        uses: 8398a7/action-slack@v2
+        if: success()
+        with:
+          type: success
+          status: ${{ job.status }}
+          username: github-functions
+          icon_emoji: ':octocat:'
+          text: "ビルドせいこう :wave1parrot::wave2parrot::wave3parrot::wave4parrot::wave5parrot::wave6parrot::wave7parrot::wave8parrot::wave9parrot:"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: slack notification
+        uses: 8398a7/action-slack@v2
+        if: failure()
+        with:
+          type: failure
+          status: ${{ job.status }}
+          username: github-functions
+          icon_emoji: ':octocat:'
+          text: "ビルドしっぱい :ripparrot:"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@master
+
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: build
+
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: slack notification
+        uses: 8398a7/action-slack@v2
+        if: success()
+        with:
+          type: success
+          status: ${{ job.status }}
+          username: github-functions
+          icon_emoji: ':octocat:'
+          text: "デプロイせいこう :wave1parrot::wave2parrot::wave3parrot::wave4parrot::wave5parrot::wave6parrot::wave7parrot::wave8parrot::wave9parrot:"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: slack notification
+        uses: 8398a7/action-slack@v2
+        if: failure()
+        with:
+          type: failure
+          status: ${{ job.status }}
+          username: github-functions
+          icon_emoji: ':octocat:'
+          text: "デプロイしっぱい :ripparrot:"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
