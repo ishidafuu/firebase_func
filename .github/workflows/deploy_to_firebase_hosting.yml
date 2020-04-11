@@ -34,6 +34,7 @@ jobs:
           cd functions
           pub get
           pub run build_runner build --output=build
+          npm install
           rm build/node/packages
 
       - name: Deploy to Firebase
