@@ -413,10 +413,10 @@
       "name": "cloud_functions_dart_example",
       "rootUri": "../",
       "packageUri": "lib/",
-      "languageVersion": "2.0"
+      "languageVersion": "2.1"
     }
   ],
-  "generated": "2020-04-11T10:14:36.929482Z",
+  "generated": "2020-04-11T10:22:55.871615Z",
   "generator": "pub",
   "generatorVersion": "2.7.2"
 }
