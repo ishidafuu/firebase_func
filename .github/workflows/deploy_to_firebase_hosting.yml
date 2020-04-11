@@ -29,7 +29,8 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@master
 
-      - run: |
+      - name: pub get and build_runner build
+        run: |
           cd functions
           pub get
           pub run build_runner build --output=build
@@ -38,8 +39,8 @@ jobs:
       - name: Archive Production Artifact
         uses: actions/upload-artifact@master
         with:
-          name: functions
-          path: functions
+          name: functions/build
+          path: functions/build
 
       - name: slack notification
         uses: 8398a7/action-slack@v2
@@ -79,7 +80,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@master
         with:
-          name: build
+          name: functions/build
 
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
