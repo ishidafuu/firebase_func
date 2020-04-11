@@ -29,10 +29,11 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@master
 
-      - run: cd functions
-      - run: pub get
-      - run: pub run build_runner build --output=build
-      - run: rm build/node/packages
+      - run: |
+        cd functions
+        pub get
+        pub run build_runner build --output=build
+        rm build/node/packages
 
       - name: Archive Production Artifact
         uses: actions/upload-artifact@master
