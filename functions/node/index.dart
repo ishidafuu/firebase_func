@@ -16,6 +16,7 @@ void main() {
   /// URL パスで利用でき、このプレフィックス以下のすべてのパスも処理します。
   /// `/helloWorld/any/number/of/sections`.
   functions['helloWorld'] = functions.https.onRequest(helloWorld);
+  functions['helloWorldOnCall'] = functions.https.onCall(helloWorldCalled);
 //  functions['makeUppercase'] =
 //      functions.database.ref('/tests/{testId}/original').onWrite(makeUppercase);
 //  functions['makeNamesUppercase'] = functions.firestore
@@ -110,13 +111,17 @@ Future<void> helloWorld(ExpressHttpRequest request) async {
     ContentType contentType = request.headers.contentType;
     if (request.method == 'POST' &&
         contentType?.mimeType == 'application/json') {
-
       print(request.body["name"]);
       var name = request.body["name"];
       if (name != null) {
         // We can also write to Realtime Database right here:
         var admin = FirebaseAdmin.instance;
-        var app = admin.initializeApp();
+        var path =
+            "C:/firebase/isdf-git-firebase-adminsdk-flh56-459eb1467e.json";
+        var appOptions = new AppOptions(
+            credential: admin.certFromPath(path),
+            databaseURL: 'https://isdf-git.firebaseio.com');
+        var app = admin.initializeApp(appOptions);
         var fireStore = app.firestore();
 
         var citiesRef = fireStore.collection('users');
@@ -134,5 +139,33 @@ Future<void> helloWorld(ExpressHttpRequest request) async {
   }
 }
 
-//cd functions && npm run build && cd .. && firebase deploy --force && curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"ishida\"}" https://us-central1-isdf-git.cloudfunctions.net/helloWorld
+/// Example HTTPS function.
+FutureOr<dynamic> helloWorldCalled(
+    dynamic data, CallableContext context) async {
+  final now = DateTime.now();
+  var nowString = now.toUtc().toIso8601String();
+
+  var admin = FirebaseAdmin.instance;
+  var path =
+      "C:/firebase/isdf-git-firebase-adminsdk-flh56-459eb1467e.json";
+  var appOptions = new AppOptions(
+      credential: admin.certFromPath(path),
+      databaseURL: 'https://isdf-git.firebaseio.com');
+  var app = admin.initializeApp(appOptions);
+  var fireStore = app.firestore();
+
+  var citiesRef = fireStore.collection('users');
+  DocumentData data = DocumentData.fromMap({'now': nowString});
+
+  await citiesRef.document('helloWorldCalled').setData(data);
+
+  print("helloWorldCalled!!!");
+
+  return {
+    "name": "isdf",
+    "asdf": nowString,
+  };
+}
+
+//cd functions && npm run build && cd .. && firebase deploy --force
 //curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"ishida\"}" https://us-central1-isdf-git.cloudfunctions.net/helloWorld
